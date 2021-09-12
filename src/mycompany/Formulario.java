@@ -100,6 +100,8 @@ public class Formulario extends JFrame {
 				String strNombre = txtNombre.getText();
 				list.add(strNombre);
 				
+				txtNombre.setText("");
+				
 				actualizarLista();
 				
 				JOptionPane.showMessageDialog(rootPane, "El cliente se guardó correctamente");
