@@ -127,8 +127,15 @@ public class Formulario extends JFrame {
 		btnEliminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				int index = listClientes.getSelectedIndex();
-				list.remove(index);
+				//int index = listClientes.getSelectedIndex();
+				//list.remove(index);
+				
+				int index[] = listClientes.getSelectedIndices();
+				
+				for (int i = 0; i < index.length; i++) {
+					list.remove(index[i]);
+				}
+				
 				
 				actualizarLista();
 				
