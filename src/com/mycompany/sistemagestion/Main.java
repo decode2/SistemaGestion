@@ -1,4 +1,6 @@
-package mycompany;
+package com.mycompany.sistemagestion;
+
+import com.mycompany.sistemagestion.forms.Formulario;
 
 public class Main {
 

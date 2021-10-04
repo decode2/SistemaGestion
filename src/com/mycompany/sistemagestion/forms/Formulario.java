@@ -1,4 +1,4 @@
-package mycompany;
+package com.mycompany.sistemagestion.forms;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -34,8 +34,14 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
+import com.mycompany.sistemagestion.dao.ClienteDao;
+import com.mycompany.sistemagestion.models.Cliente;
+import com.mysql.cj.util.StringUtils;
+
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class Formulario extends JFrame {
 
@@ -45,10 +51,12 @@ public class Formulario extends JFrame {
 	private JLabel lblNewLabel;
 	private JList listClientes;
 	private JButton btnEliminar;
-	private List<Cliente> list = new ArrayList<Cliente>();
 	private JTextField txtApellido;
 	private JTextField txtEmail;
 	private JTextField txtTelefono;
+	
+	private List<Cliente> list = new ArrayList<>(); 
+	private JButton btnEditar;
 
 	/**
 	 * Launch the application.
@@ -70,6 +78,13 @@ public class Formulario extends JFrame {
 	 * Create the frame.
 	 */
 	public Formulario() {
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				
+				actualizarLista();
+			}
+		});
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 711, 492);
 		contentPane = new JPanel();
@@ -93,51 +108,24 @@ public class Formulario extends JFrame {
 		});
 		
 		
-		btnGuardar = new JButton("Guardar");
-		btnGuardar.setBounds(478, 355, 89, 23);
-		btnGuardar.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				String strNombre = txtNombre.getText();
-				String strApellido = txtApellido.getText();
-				String strEmail = txtEmail.getText();
-				String strTelefono = txtTelefono.getText();
-				
-				Cliente client = new Cliente();
-				client.setNombre(strNombre);
-				client.setApellido(strApellido);
-				client.setEmail(strEmail);
-				client.setTelefono(strTelefono);
-				
-				cleanTextBoxes();
-				
-				list.add(client);
-				actualizarLista();
-				JOptionPane.showMessageDialog(rootPane, "El cliente se guardó correctamente");
-			}
-			
-			
-		});
 		
 		txtNombre = new JTextField();
 		txtNombre.setBounds(427, 94, 170, 23);
 		txtNombre.setColumns(10);
 		
 		
-		lblNewLabel = new JLabel("Nombre");
-		lblNewLabel.setBounds(365, 98, 52, 14);
-		contentPane.setLayout(null);
-		contentPane.add(txtNombre);
-		contentPane.add(listClientes);
-		contentPane.add(lblNewLabel);
-		contentPane.add(btnGuardar);
-		
 		btnEliminar = new JButton("Eliminar");
 		btnEliminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
 				int index = listClientes.getSelectedIndex();
-				list.remove(index);
+				
+				
+				//list.remove(index);
+				Cliente client = list.get(index);
+				
+				ClienteDao dao = new ClienteDao();
+				dao.delete(client.getId());
 				
 				actualizarLista();
 				
@@ -174,11 +162,95 @@ public class Formulario extends JFrame {
 		txtTelefono.setColumns(10);
 		txtTelefono.setBounds(427, 182, 170, 23);
 		contentPane.add(txtTelefono);
+		
+		JLabel lblNewLabel_1 = new JLabel("ID:");
+		lblNewLabel_1.setBounds(365, 73, 46, 14);
+		contentPane.add(lblNewLabel_1);
+		
+		final JLabel lblID = new JLabel("");
+		lblID.setBounds(427, 73, 46, 14);
+		contentPane.add(lblID);
+		
+		btnEditar = new JButton("Editar");
+		btnEditar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				int index = listClientes.getSelectedIndex();
+				
+				
+				//list.remove(index);
+				Cliente client = list.get(index);
+				
+				txtNombre.setText(client.getNombre());
+				txtApellido.setText(client.getApellido());
+				txtTelefono.setText(client.getTelefono());
+				txtEmail.setText(client.getEmail());
+				
+				lblID.setText(client.getId());
+			}
+		});
+		btnEditar.setBounds(31, 408, 89, 23);
+		contentPane.add(btnEditar);
+		
+		
+		btnGuardar = new JButton("Guardar");
+		btnGuardar.setBounds(459, 216, 89, 23);
+		btnGuardar.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				String strNombre = txtNombre.getText();
+				String strApellido = txtApellido.getText();
+				String strEmail = txtEmail.getText();
+				String strTelefono = txtTelefono.getText();
+				
+				if (StringUtils.isEmptyOrWhitespaceOnly(strNombre) || StringUtils.isEmptyOrWhitespaceOnly(strApellido) || StringUtils.isEmptyOrWhitespaceOnly(strEmail) || StringUtils.isEmptyOrWhitespaceOnly(strTelefono)) {
+					JOptionPane.showMessageDialog(rootPane, "El cliente debe tener los datos completos");
+					return;
+				}
+				
+				Cliente client = new Cliente();
+				client.setNombre(strNombre);
+				client.setApellido(strApellido);
+				client.setEmail(strEmail);
+				client.setTelefono(strTelefono);
+				
+				if (!StringUtils.isEmptyOrWhitespaceOnly(lblID.getText())) {
+					client.setId(lblID.getText());
+				}
+				
+				ClienteDao dao = new ClienteDao();
+				//dao.add(client);
+				
+				dao.save(client);
+				
+				cleanTextBoxes();
+				lblID.setText(null);
+				
+				actualizarLista();
+				JOptionPane.showMessageDialog(rootPane, "El cliente se guardó correctamente");
+			}
+			
+		});
+		
+		lblNewLabel = new JLabel("Nombre");
+		lblNewLabel.setBounds(365, 98, 52, 14);
+		contentPane.setLayout(null);
+		contentPane.add(txtNombre);
+		contentPane.add(listClientes);
+		contentPane.add(lblNewLabel);
+		contentPane.add(btnGuardar);
+		
 	}
 	
 	private void actualizarLista(){
+		
 		DefaultListModel datos = new DefaultListModel();
-		Cliente client;
+		
+		ClienteDao dao = new ClienteDao();
+		list = dao.list();
+		
+		Cliente client = new Cliente();
+		
 		for (int i = 0; i < list.size(); i++) {
 			client = list.get(i);
 			datos.addElement(client.getNombreCompleto());
